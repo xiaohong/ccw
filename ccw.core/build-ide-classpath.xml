@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+
+<project name="build-ide-classpath" default="init-classpath" basedir=".">
+    <path id="build.ide.classpath">
+        <fileset dir="${target.home}/plugins">
+            <include name="org.eclipse.ui_*.jar" />
+            <include name="org.eclipse.core.runtime_*.jar" />
+            <include name="org.eclipse.osgi_*.jar" />
+            <include name="org.eclipse.equinox.common_*.jar" />
+            <include name="org.eclipse.core.jobs_*.jar" />
+            <!--include name="org.eclipse.core.runtime.compatibility.registry_3.2.200.v20080610/runtime_registry_compatibility.jar" /-->
+            <!--include name="org.eclipse.core.runtime.compatibility.registry_3.2.200.v20080610" /-->
+            <include name="org.eclipse.equinox.registry_*.jar" />
+            <include name="org.eclipse.equinox.preferences_*.jar" />
+            <!--include name="org.eclipse.core.runtime.compatibility.registry_3.2.200.v20080610/@dot" /-->
+            <include name="org.eclipse.core.contenttype_*.jar" />
+            <include name="org.eclipse.core.runtime.compatibility.auth_*.jar" />
+            <include name="org.eclipse.equinox.app_*.jar" />
+            <include name="org.eclipse.osgi.services_*.jar" />
+            <include name="javax.servlet_*.jar" />
+            <include name="org.eclipse.swt.*.jar" />
+            <include name="org.eclipse.swt_*.jar" />
+            <include name="org.eclipse.jface_*.jar" />
+            <include name="org.eclipse.core.commands_*.jar" />
+            <include name="org.eclipse.ui.workbench_*.jar" />
+            <!--include name="org.eclipse.ui.workbench.compatibility_3.2.0.I20080509-2000/compatibility.jar" /-->
+            <!--include name="org.eclipse.ui.workbench.compatibility_3.2.0.I20080509-2000/@dot" /-->
+            <include name="com.ibm.icu_*.jar" />
+            <include name="org.eclipse.help_*.jar" />
+            <include name="org.eclipse.core.expressions_*.jar" />
+            <include name="org.eclipse.jface.databinding_*.jar" />
+            <include name="org.eclipse.core.databinding_*.jar" />
+            <include name="org.eclipse.core.resources_*.jar" />
+            <include name="org.eclipse.core.resources.compatibility_*.jar" />
+            <include name="org.eclipse.ant.core_*.jar" />
+            <include name="org.eclipse.core.variables_*.jar" />
+            <include name="org.eclipse.core.filesystem_*.jar" />
+            <!--include name="org.eclipse.core.filesystem.linux.x86_*.jar" /-->
+            <include name="org.eclipse.ui.editors_*.jar" />
+            <include name="org.eclipse.ui.ide_*.jar" />
+            <include name="org.eclipse.ui.views_*.jar" />
+            <include name="org.eclipse.update.configurator_*.jar" />
+            <include name="org.eclipse.update.core_*.jar" />
+            <include name="org.eclipse.update.core.linux_*.jar" />
+            <include name="org.eclipse.core.net_*.jar" />
+            <!--include name="org.eclipse.core.net.linux.x86_*.jar" /-->
+            <include name="org.eclipse.equinox.security_*.jar" />
+            <include name="org.eclipse.update.ui_*.jar" />
+            <include name="org.eclipse.ui.forms_*.jar" />
+            <include name="org.eclipse.jface.text_*.jar" />
+            <include name="org.eclipse.text_*.jar" />
+            <include name="org.eclipse.ui.workbench.texteditor_*.jar" />
+            <include name="org.eclipse.core.filebuffers_*.jar" />
+            <include name="org.eclipse.debug.core_*.jar" />
+            <include name="org.eclipse.ui.console_*.jar" />
+            <include name="org.eclipse.debug.ui_*.jar" />
+            <include name="org.eclipse.ui.navigator_*.jar" />
+            <include name="org.eclipse.jdt.ui_*.jar" />
+            <include name="org.eclipse.jdt.core_*.jar" />
+            <include name="org.eclipse.jdt.compiler.tool_*.jar" />
+            <include name="org.eclipse.jdt.compiler.apt_*.jar" />
+            <!--include name="com.swtdesigner.fragment.jdt.core_6.8.0.200810070805/designerJdtCore.jar" /-->
+            <!--include name="com.swtdesigner.fragment.jdt.core_6.8.0.200810070805/@dot" /-->
+            <include name="org.eclipse.team.core_*.jar" />
+            <include name="org.eclipse.search_*.jar" />
+            <include name="org.eclipse.ltk.core.refactoring_*.jar" />
+            <include name="org.eclipse.ltk.ui.refactoring_*.jar" />
+            <include name="org.eclipse.compare_*.jar" />
+            <include name="org.eclipse.team.ui_*.jar" />
+            <include name="org.eclipse.ui.navigator.resources_*.jar" />
+            <include name="org.eclipse.ui.views.properties.tabbed_*.jar" />
+            <include name="org.eclipse.jdt.launching_*.jar" />
+            <!--include name="org.eclipse.jdt.debug_3.4.0.v20080604/jdi.jar" /-->
+            <!--include name="org.eclipse.jdt.debug_3.4.0.v20080604/jdimodel.jar" /-->
+            <!--include name="org.eclipse.jdt.debug_3.4.0.v20080604/tools.jar" /-->
+            <include name="org.eclipse.jdt.core.manipulation_*.jar" />
+        </fileset>
+        <fileset dir="${basedir}/lib" includes="**/*.jar" />
+        <pathelement location="${basedir}/classes/" />
+    </path>
+	<!-- Cette tache n'est pas executee en compilation headless, juste en compilation
+         quotidienne via l'IDE ...
+    -->
+	<target name="init-pde-classpath" if="is-pdebuild">
+		<path id="project.classpath">
+			<path refid="@dot.classpath" />
+			<pathelement location="${target.folder}" />
+		</path>
+	</target>
+	<target name="init-ide-classpath" unless="is-pdebuild">
+		<path id="project.classpath">
+			<path refid="build.ide.classpath" />
+			<pathelement location="${basedir}/bin" />
+		</path>
+	</target>
+	<target name="init-classpath" depends="init-pde-classpath,init-ide-classpath" />
+</project>

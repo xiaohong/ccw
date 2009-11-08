@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<project name="compile-clojure" default="all" basedir=".">
+	<description>
+        Compiles the clojure namespaces of ccw.
+    </description>
+
+	<property name="clojure.src" location="src" />
+	<property name="clojure.build" location="classes" />
+
+	<import file="build-ide-classpath.xml" />
+
+	<target name="init" depends="init-classpath">
+		<!--tstamp/-->
+		<mkdir dir="${clojure.build}" />
+	</target>
+
+	<target name="all" depends="compile-genclass-stubs,compile-implementations" />
+
+    <target name="clean" depends="init">
+        <delete includeemptydirs="true">
+            <fileset dir="${clojure.build}" includes="**/*" />
+        </delete>
+    </target>
+	
+	<target name="compile-genclass-stubs" depends="init" description="Compile the clojure classes stubs (with no dependency on the plugins classes).">
+		<java classname="clojure.lang.Compile" fork="true" failonerror="true">
+			<classpath>
+				<path location="${clojure.build}" />
+				<path location="${clojure.src}" />
+				<path refid="project.classpath" />
+			</classpath>
+			<sysproperty key="clojure.compile.path" value="${clojure.build}" />
+			<!--sysproperty key="java.awt.headless" value="true"/-->
+			<arg value="com.yseop.designer.ui.wizards.imports.granules.GranuleImportPage" />
+			<arg value="com.yseop.designer.ui.wizards.imports.granules.GranuleImportWizard" />
+		</java>
+	</target>
+
+	<target name="compile-implementations" depends="init" description="Compile the clojure namespaces (all namespaces, including those with gen-class calls). May have dependencies on the plugins classes.">
+		<java classname="clojure.lang.Compile" fork="true" failonerror="true">
+			<classpath>
+				<path location="${clojure.build}" />
+				<path location="${clojure.src}" />
+				<path refid="project.classpath" />
+			</classpath>
+			<sysproperty key="clojure.compile.path" value="${clojure.build}" />
+			<arg value="com.yseop.clojure.util.eclipse.jface-preference" />
+			<arg value="com.yseop.clojure.util.core" />
+			<arg value="com.yseop.clojure.util.csv" />
+			<arg value="com.yseop.designer.ui.wizards.imports.granules.GranuleImportPageImpl" />
+			<arg value="com.yseop.designer.ui.wizards.imports.granules.GranuleImportWizardImpl" />
+			<arg value="com.yseop.designer.ui.wizards.imports.granules.perform" />
+		</java>
+	</target>
+
+</project>
