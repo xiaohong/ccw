@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-Vendor: Counterclockwise team
+Bundle-ActivationPolicy: lazy
+Bundle-Version: 0.57.0.201004292136
+Bundle-Name: Counterclockwise Plugin
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: ccw.branding;singleton:=true
+
