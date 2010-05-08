@@ -15,15 +15,24 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleInputStream;
 import org.eclipse.ui.console.IOConsoleOutputStream;
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.part.IPageBookViewPage;
+import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 
+import ccw.CCWPlugin;
 import clojure.lang.Compiler;
 import clojure.lang.LineNumberingPushbackReader;
 import clojure.lang.LispReader;
@@ -64,9 +73,12 @@ public class ClojureConsole extends IOConsole implements Runnable {
 
     
     private BlockingQueue queue = new LinkedBlockingQueue();
+    
+    private IPreferenceStore preferenceStore;
 
     public ClojureConsole() {
         super("Clojure REPL", null);
+        preferenceStore = createCombinedPreferenceStore();
         Thread evalThread = new Thread(this);
         evalThread.start();
     }
@@ -214,4 +226,25 @@ public class ClojureConsole extends IOConsole implements Runnable {
         return clojure.lang.Compiler.eval(r);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.ui.console.IConsole#createPage(org.eclipse.ui.console.IConsoleView)
+     */
+    public IPageBookViewPage createPage(IConsoleView view) {
+        return new ClojureConsolePage(this, view, preferenceStore);
+    }
+
+    /**
+     * Create a preference store combined from the Clojure, the EditorsUI and
+     * the PlatformUI preference stores to inherit all the default text editor
+     * settings from the Eclipse preferences.
+     * 
+     * @return the combined preference store.
+     */
+    private IPreferenceStore createCombinedPreferenceStore() {
+        List<IPreferenceStore> stores = new LinkedList<IPreferenceStore>();
+        stores.add(CCWPlugin.getDefault().getPreferenceStore());
+        stores.add(EditorsUI.getPreferenceStore());
+        stores.add(PlatformUI.getPreferenceStore());
+        return new ChainedPreferenceStore(stores.toArray(new IPreferenceStore[stores.size()]));
+    }
 }
