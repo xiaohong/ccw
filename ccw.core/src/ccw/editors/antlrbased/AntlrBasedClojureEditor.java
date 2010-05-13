@@ -41,6 +41,8 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.ContentAssistAction;
+import org.eclipse.ui.texteditor.IStatusField;
+import org.eclipse.ui.texteditor.IStatusFieldExtension;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -54,6 +56,9 @@ import ccw.editors.rulesbased.ClojurePartitionScanner;
 import ccw.launching.ClojureLaunchShortcut;
 
 public class AntlrBasedClojureEditor extends TextEditor {
+	public static final String EDITOR_REFERENCE_HELP_CONTEXT_ID = "ccw.branding.editor_context_help";
+    public static final String STATUS_CATEGORY_STRUCTURAL_EDITION = "CCW.STATUS_CATEGORY_STRUCTURAL_EDITING_POSSIBLE";
+	
     private static final String CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal"; //$NON-NLS-1$
     public static final String ID = "ccw.antlrbasededitor"; //$NON-NLS-1$
 	/** Preference key for matching brackets */
@@ -86,17 +91,33 @@ public class AntlrBasedClojureEditor extends TextEditor {
 	private ProjectionSupport fProjectionSupport;
 
 	private ClojureOutlinePage outlinePage;
+	
+	/** 
+	 * Set to false if structural editing is not possible, because the document
+	 * is not parseable.
+	 */
+	private boolean structuralEditingPossible;
+	/**
+	 * Set to true if the editor is in "Strict" Structural editing mode
+	 */
+	private boolean useStrictStructuralEditing;
 
+	public boolean useStrictStructuralEditing() {
+		return useStrictStructuralEditing;
+	}
+	
 	public AntlrBasedClojureEditor() {
 	    IPreferenceStore preferenceStore = createCombinedPreferenceStore();
 		setSourceViewerConfiguration(new ClojureSourceViewerConfiguration(preferenceStore, this));
 		setPreferenceStore(preferenceStore);
         setDocumentProvider(new ClojureDocumentProvider()); 
+        setHelpContextId(EDITOR_REFERENCE_HELP_CONTEXT_ID);
 	}
 	
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		super.init(site, input);
+		useStrictStructuralEditing = getPreferenceStore().getBoolean(ccw.preferences.PreferenceConstants.USE_STRICT_STRUCTURAL_EDITING_MODE_BY_DEFAULT);
 	}
 	
 	@Override
@@ -144,7 +165,56 @@ public class AntlrBasedClojureEditor extends TextEditor {
 		fProjectionSupport.install();
 		viewer.doOperation(ClojureSourceViewer.TOGGLE);
 	}
+	
+	public void setStructuralEditingPossible(boolean state) {
+		if (state != this.structuralEditingPossible) {
+			this.structuralEditingPossible = state;
+			updateStatusField(STATUS_CATEGORY_STRUCTURAL_EDITION);
+		}
+	}
+	
+	public void toggleStructuralEditionMode() {
+		useStrictStructuralEditing = !useStrictStructuralEditing;
+		updateStatusField(STATUS_CATEGORY_STRUCTURAL_EDITION);
+		updateTabsToSpacesConversion();
+	}
+	
+	public void updateTabsToSpacesConversion() {
+		if (useStrictStructuralEditing) {
+			uninstallTabsToSpacesConverter();
+		} else {
+			installTabsToSpacesConverter();
+		}
+	}
+	
+	protected void updateStatusField(String category) {
+		if (!STATUS_CATEGORY_STRUCTURAL_EDITION.equals(category)) {
+			super.updateStatusField(category);
+			return;
+		}
 
+		if (category == null)
+			return;
+
+		IStatusField field= getStatusField(category);
+		IStatusFieldExtension extField = (IStatusFieldExtension) field;
+		if (field != null) {
+			/*
+			 * Disabled, because currently structuralEditingPossible is not reliable (some paredit commands stop after having parsed all the text)
+			 * TODO reactivate when paredit has been ported to parsley
+			String text= "Structural Edition: " 
+				+ (structuralEditingPossible ? "enabled" : "disabled");
+				*/
+			String text = "Structural Edition: " + (useStrictStructuralEditing ? "Strict mode" : "Default mode");
+			field.setText(text == null ? fErrorLabel : text);
+			extField.setToolTipText(
+					(useStrictStructuralEditing 
+							? "Strict mode: editor does its best to prevent you from breaking the structure of the code (requires you to know shortcut commands well). Click to switch to Default Mode."
+						   : "Default mode: helps you with edition, but does not get in your way Click to switch to Strict Mode."));
+		}
+	}
+
+	
     public DefaultCharacterPairMatcher getPairsMatcher() {
         return pairsMatcher;
     }
@@ -257,6 +327,10 @@ public class AntlrBasedClojureEditor extends TextEditor {
 		action = new JoinSexprAction(this);
 		action.setActionDefinitionId(IClojureEditorActionDefinitionIds.JOIN_SEXPR);
 		setAction(/*JoinSexprAction.ID*/"JoinSexprAction", action);
+		
+		action = new SwitchStructuralEditionModeAction(this);
+		action.setActionDefinitionId(IClojureEditorActionDefinitionIds.SWITCH_STRUCTURAL_EDITION_MODE);
+		setAction(/*SwitchStructuralEditionModeAction.ID*/"SwitchStructuralEditionModeAction", action);
 }
 	
 	/**
@@ -711,13 +785,14 @@ public class AntlrBasedClojureEditor extends TextEditor {
         return super.getSourceViewer();
     }
 
+    /** Change the visibility of the method to public */
     @Override
     public void setStatusLineErrorMessage(String message) {
-        super.setStatusLineMessage(message);
+        super.setStatusLineErrorMessage(message);
     }
-    
+
     @Override
     protected boolean isTabsToSpacesConversionEnabled() {
-    	return false;
+    	return !useStrictStructuralEditing;
     }
 }

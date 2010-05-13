@@ -219,6 +219,12 @@
             description="%command.joinSexpr.description"
             id="ccw.ui.edit.text.clojure.join.sexpr"
             name="%command.joinSexpr.name">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.edit"
+            description="%command.switchStructuralEditionMode.description"
+            id="ccw.ui.edit.text.clojure.switch.structuraledition.mode"
+            name="%command.switchStructuralEditionMode.name">
       </command>	  
 <!-- navigate -->
       <command
@@ -320,10 +326,23 @@
             commandId="ccw.ui.edit.text.clojure.expand.selection.up"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
+            sequence="M2+M1+ARROW_UP"
+            contextId="ccw.ui.clojureEditorScope"
+            commandId="ccw.ui.edit.text.clojure.expand.selection.up"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            platform="carbon"/>
+      <key
             commandId="ccw.ui.edit.text.clojure.expand.selection.left"
             contextId="ccw.ui.clojureEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M2+M3+ARROW_LEFT">
+      </key>
+      <key
+            commandId="ccw.ui.edit.text.clojure.expand.selection.left"
+            contextId="ccw.ui.clojureEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M1+ARROW_LEFT"
+            platform="carbon">
       </key>
       <key
             commandId="ccw.ui.edit.text.clojure.expand.selection.right"
@@ -332,10 +351,24 @@
             sequence="M2+M3+ARROW_RIGHT">
       </key>
       <key
+            commandId="ccw.ui.edit.text.clojure.expand.selection.right"
+            contextId="ccw.ui.clojureEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M1+ARROW_RIGHT"
+            platform="carbon">
+      </key>
+      <key
             commandId="ccw.ui.edit.text.clojure.select.last"
             contextId="ccw.ui.clojureEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M2+M3+ARROW_DOWN">
+      </key>
+      <key
+            commandId="ccw.ui.edit.text.clojure.select.last"
+            contextId="ccw.ui.clojureEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M1+ARROW_DOWN"
+            platform="carbon">
       </key>
       <key
             commandId="ccw.ui.edit.text.clojure.select.raise"
@@ -355,25 +388,19 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M3+J">
       </key>
-<!--            sequence="M1+M2+ARROW_UP" -->
+      <key
+            commandId="ccw.ui.edit.text.clojure.switch.structuraledition.mode"
+            contextId="ccw.ui.clojureEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+D">
+      </key>
       <key
             sequence="M1+M3+A"
             contextId="ccw.ui.clojureEditorScope"
             commandId="ccw.ui.edit.text.clojure.goto.previous.member"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
-            sequence="M1+M2+A"
-            contextId="ccw.ui.clojureEditorScope"
-            commandId="ccw.ui.edit.text.clojure.goto.previous.member"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-<!--            sequence="M1+M2+ARROW_DOWN" -->
-      <key
             sequence="M1+M3+E"
-            contextId="ccw.ui.clojureEditorScope"
-            commandId="ccw.ui.edit.text.clojure.goto.next.member"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            sequence="M1+M2+E"
             contextId="ccw.ui.clojureEditorScope"
             commandId="ccw.ui.edit.text.clojure.goto.next.member"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
@@ -386,8 +413,7 @@
             sequence="M1+M3+T"
             contextId="ccw.ui.clojureEditorScope"
             commandId="ccw.ui.edit.text.clojure.select.toplevel.s.expression"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            platform="carbon"/>
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
             sequence="M1+M3+X"
             contextId="ccw.ui.clojureEditorScope"
@@ -553,6 +579,14 @@
                label="Clojure"
                mnemonic="C"
                tooltip="Menu for Clojure related commands">
+            <separator
+                  name="ccw.menus.separator1"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="ccw.ui.edit.text.clojure.switch.structuraledition.mode"
+                  style="push">
+            </command>
             <menu
                   id="ccw.menus.clojure.goTo"
                   label="%GoTo_label">
