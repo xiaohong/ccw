@@ -16,12 +16,12 @@
 ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; library code
 
-(defn on-thread [f] (.start (new Thread f)))
+(defn on-thread [f] (.start (new Thread #^Runnable f)))
 
 (defn create-server
   "creates and returns a server socket on port, will pass the client
    socket to accept-socket on connection"
-  [accept-socket port file-name]
+  [accept-socket port #^String file-name]
   (on-thread
     #(loop []
        ; (println "port=" port " ; file-name=" file-name)

@@ -12,6 +12,8 @@
 (ns ccw.editors.antlrbased.StacktraceHyperlink
   (:require [clojure.contrib.str-utils2 :as s])
   (:use [clojure.test])
+  (:import [org.eclipse.jface.text IDocument]
+           [org.eclipse.ui.console PatternMatchEvent TextConsole])
   (:gen-class
     :init init
     :state state
@@ -20,13 +22,13 @@
 (defn -init []
   [[] (ref nil)])
 
-(defn -connect [this console]
+(defn -connect [#^ccw.editors.antlrbased.StacktraceHyperlink this console]
   (dosync (ref-set (.state this) console)))
 
-(defn -disconnect [this])
+(defn -disconnect [#^ccw.editors.antlrbased.StacktraceHyperlink this])
 
 (defn- find-datas [s]
-  {:line (Integer/valueOf (second (re-find #":([0-9]+)" s)))
+  {:line (Integer/valueOf #^String (second (re-find #":([0-9]+)" s)))
    :file (str (s/replace (second (re-find #"at ([\w\.]+)\$" s)) "." "/") ".clj")
    :ns (s/replace (second (re-find #"at ([\w\.]+)\$" s)) "_" "-")})
 
@@ -37,10 +39,10 @@
 (defn- offset-and-length [s]
   (map + [1 0] (map count (s/split s #"\("))))
 
-(defn -matchFound [this event]
-  (let [console @(.state this)
+(defn -matchFound [#^ccw.editors.antlrbased.StacktraceHyperlink this #^PatternMatchEvent event]
+  (let [console #^TextConsole @(.state this)
         offset (.getOffset event)
-        s (.get (.getDocument console) offset (.getLength event))
+        s (.get #^IDocument (.getDocument console) offset (.getLength event))
         [o l] (offset-and-length s)
         hyperlink (proxy [org.eclipse.ui.console.IHyperlink] []
                     (linkActivated [] (open-file s))

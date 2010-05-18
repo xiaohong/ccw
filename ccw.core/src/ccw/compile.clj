@@ -10,6 +10,8 @@
 ;*******************************************************************************/
 (ns ccw.compile)
 
+(set! *warn-on-reflection* true)
+
 (defn all []
   (dorun   
     (map

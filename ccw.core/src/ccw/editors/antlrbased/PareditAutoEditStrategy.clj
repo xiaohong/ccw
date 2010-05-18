@@ -63,6 +63,8 @@
     (.useStrictStructuralEditing editor)
     true))
 
+(defn- #^AntlrBasedClojureEditor editor [#^ccw.editors.antlrbased.PareditAutoEditStrategy this] (-> this .state deref :editor))
+
 (defn -customizeDocumentCommand 
   [#^ccw.editors.antlrbased.PareditAutoEditStrategy this, #^IDocument document, #^DocumentCommand command]
   (println "Called!")
@@ -96,5 +98,5 @@
         (set! (.caretOffset command) (:offset result))
         (when-not (zero? (:length result)) 
           (println (str "result:" result))
-          (.selectAndReveal (-> this .state deref :editor) (:offset result) (:length result))))
-      (.setStructuralEditingPossible (-> this .state deref :editor) (true? (and result (not= :ko (-> result :parser-state))))))))
+          (.selectAndReveal editor (:offset result) (:length result))))
+      (.setStructuralEditingPossible editor (true? (and result (not= :ko (-> result :parser-state))))))))

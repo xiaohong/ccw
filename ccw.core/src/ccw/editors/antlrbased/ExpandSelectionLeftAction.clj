@@ -30,8 +30,6 @@
 
 (def *ID* "ExpandSelectionLeftAction")
 
-#_(set! *warn-on-reflection* true)
-
 (defn- -init
   [#^AntlrBasedClojureEditor editor #^SelectionHistory selection-history]
   [[ClojureEditorMessages/ExpandSelectionLeftAction_label] (ref {:editor editor :selection-history selection-history})])  
@@ -40,16 +38,18 @@
   [#^ccw.editors.antlrbased.ExpandSelectionLeftAction this editor #^SelectionHistory selection-history]
   (.setEnabled this true))
 
+(defn- #^SelectionHistory selection-history [#^ccw.editors.antlrbased.ExpandSelectionLeftAction t] (-> t .state deref :selection-history))
+
 (defn -run
   [#^ccw.editors.antlrbased.ExpandSelectionLeftAction this]
   (let [editor #^AntlrBasedClojureEditor (:editor @(.state this))
         {:keys #{length offset}} (bean (.getUnSignedSelection editor))
         text  (.get (.getDocument #^AntlrBasedClojureEditor editor))
         {new-length :length new-offset :offset} (paredit :paredit-expand-left {:text text :offset offset :length length})]
-    (-> this .state deref :selection-history (.remember (SourceRange. offset length)))
+    (-> this selection-history (.remember (SourceRange. offset length)))
     (try
-      (-> this .state deref :selection-history .ignoreSelectionChanges)
+      (-> this selection-history .ignoreSelectionChanges)
       (.selectAndReveal editor new-offset new-length)
       (finally
-        (-> this .state deref :selection-history .listenToSelectionChanges)))))
+        (-> this selection-history .listenToSelectionChanges)))))
 

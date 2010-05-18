@@ -32,7 +32,7 @@
         result (paredit :paredit-join-sexps {:text text :offset offset :length length})]
     (when-let [modif (-?> result :modifs first)]
       (let [{:keys #{length offset text}} modif
-            document (-> (:editor @(.state this)) .getDocument)]
+            document (-> editor .getDocument)]
         (.replace document offset length text)
-        (.selectAndReveal (:editor @(.state this)) (:offset result) (:length result))))))
+        (.selectAndReveal editor (:offset result) (:length result))))))
 

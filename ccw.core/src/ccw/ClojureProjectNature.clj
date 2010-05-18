@@ -11,11 +11,12 @@
 (ns ccw.ClojureProjectNature
   (:import
     [ccw CCWPlugin ClojureCore]
+    [ccw.builder ClojureBuilder]
     [java.io IOException File]
     [ccw.builder ClojureBuilder]
     [org.eclipse.core.runtime CoreException Platform Path Status IPath IProgressMonitor FileLocator]
-    [org.eclipse.core.resources WorkspaceJob IResource ResourcesPlugin]
-    [org.eclipse.jdt.core JavaCore])
+    [org.eclipse.core.resources WorkspaceJob IResource ResourcesPlugin IFile IProject IProjectDescription]
+    [org.eclipse.jdt.core JavaCore IJavaProject IClasspathEntry])
   (:use [clojure.contrib [duck-streams :as cc.stream]])
   (:gen-class
    :implements [org.eclipse.core.resources.IProjectNature]
@@ -30,11 +31,11 @@
 (defn- -init
   [] [[] (ref {:project nil :errors []})])
 
-(defn- get-project-description
+(defn- #^IProjectDescription get-project-description
   "returns the project description or null if the project
    is null, closed, or an error occured while getting description
   "
-  [proj]
+  [#^IProject proj]
   (cond
     (nil? proj) 
       (do
@@ -53,7 +54,7 @@
 
 (defn- builder-present?
   [builders builder-name]
-  (some #(= builder-name (.getBuilderName %)) builders))
+  (some (fn [b] (= builder-name (.getBuilderName b))) builders))
     
 (defn- get-jar-inside-plugin
   [plugin-name jar-name]
@@ -77,11 +78,11 @@
         nil))))
           
 (defn- has-classes-folder?
-  [java-project]
+  [#^IJavaProject java-project]
   (not (nil? (.findPackageFragmentRoot java-project (-> java-project .getProject (.getFolder "classes") .getLocation)))))     
 
 (defn- has-path-on-classpath? 
-  [java-project searched-path]
+  [#^IJavaProject java-project searched-path]
   (let [p (if (instance? Path searched-path) searched-path (Path. searched-path))]
     (not (nil? (.findElement java-project p)))))
     
@@ -94,12 +95,12 @@
   (has-path-on-classpath? java-project "clojure/lang"))  
 
 (defn- has-classpath-entry?
-  [java-project lib-path]
+  [#^IJavaProject java-project lib-path]
   (let [entries-old (.getRawClasspath java-project)]
-    (some #(= lib-path (.getPath %)) entries-old)))
+    (some (fn [#^IClasspathEntry cpe] (= lib-path (.getPath cpe))) entries-old)))
 
 (defn- project-name
-  [java-project] (-> java-project .getProject .getName))
+  [#^IJavaProject java-project] (-> java-project .getProject .getName))
 
 (defn- make-workspace-job
   [job-name runInWorkspace-fn]
@@ -115,25 +116,25 @@
                     mess))))
 (defn- make-ws-path
   "Make a workspace-relative path from the given path if possible"
-  [path]
+  [#^IPath path]
   (if path
     (let
 	    [uri (-> path .toFile .toURI)
 				root (.getRoot (ResourcesPlugin/getWorkspace))
 				files (.findFilesForLocationURI root uri)]
      (if (pos? (count files))
-				(.getFullPath (aget files 0))
+				(.getFullPath #^IFile (aget files 0))
 				path))))
 
 (defn- add-lib-on-classpath!
-  [java-project lib-path libSrc-path copy?]
+  [#^IJavaProject java-project #^IPath lib-path #^IPath libSrc-path copy?]
   (io!
     (if (nil? lib-path)
       (throw (CoreException. (Status/CANCEL_STATUS)))
       (let [entries-old (vec (.getRawClasspath java-project))]
       	(when-not (has-classpath-entry? java-project lib-path)
-      	  (let [make-dest-path    #(-> java-project .getProject .getLocation (.append (.lastSegment %)))
-      	        in-project-lib    (make-dest-path lib-path)
+      	  (let [make-dest-path    #^IPath #(-> java-project .getProject .getLocation (.append (.lastSegment #^IPath %)))
+      	        in-project-lib    #^IPath (make-dest-path lib-path)
       	        in-project-libSrc (when libSrc-path
       	        										(if copy?
 		      	        									(-> in-project-lib 
@@ -157,11 +158,11 @@
       	        (.save nil true)
                 (-> .getProject (.refreshLocal (IResource/DEPTH_ONE) nil))))))))))
 
-(defn- file-to-path
-  [file] (Path/fromOSString (.getAbsolutePath file)))
+(defn- #^IPath file-to-path
+  [#^File file] (Path/fromOSString (.getAbsolutePath file)))
 
 (defn- add-clojure-lib-on-classpath!
-  [java-project]
+  [#^IJavaProject java-project]
   (add-lib-on-classpath!
     java-project
     (file-to-path (get-jar-inside-plugin "ccw.clojure", "clojure"))
@@ -169,7 +170,7 @@
     true))      	    
       
 (defn- add-clojure-contrib-lib-on-classpath!
-  [java-project]
+  [#^IJavaProject java-project]
   (add-lib-on-classpath!
     java-project
     (file-to-path (get-jar-inside-plugin "ccw.clojurecontrib", "clojure-contrib"))
@@ -177,7 +178,7 @@
     true))      	    
 
 (defn- add-classes-directory!
-  [java-project]
+  [#^IJavaProject java-project]
   (io!
 	  (let [classes-folder (-> java-project .getProject (.getFolder "classes"))]
 	    (if (not (.exists classes-folder))
@@ -200,7 +201,7 @@
 	      (when (not (pred java-project)) (add-fn java-project))))))
 
 (defn- insert-clojure-builder!
-  [proj spec desc]
+  [#^IProject proj spec #^IProjectDescription desc]
   (io!
 	  (let [clojure-command (.newCommand desc)]
 		  (.setBuilderName clojure-command (ClojureBuilder/BUILDER_ID))
@@ -208,7 +209,7 @@
 		  (.setDescription proj desc (IResource/FORCE), nil))))
 		             
 (defn- -configure
-  [this]
+  [#^ccw.ClojureProjectNature this]
   (let [proj (:project @(.state this))]
 	  (when-let [desc (get-project-description proj)]
 	    (let [spec (.getBuildSpec desc)]
@@ -217,7 +218,7 @@
 		      (setup-clojure-project-classpath! proj))))))
   
 (defn- -deconfigure
-  [this]
+  [#^ccw.ClojureProjectNature this]
   (when-let [desc (get-project-description (.getProject this))]
     (let [spec (.getBuildSpec desc)]
       (when (builder-present? spec (ClojureBuilder/BUILDER_ID))
@@ -229,7 +230,7 @@
               (CCWPlugin/logError "Could not set project description" e)))))))) 
   
 (defn -getProject
-  [this] (:project @(.state this)))
+  [#^ccw.ClojureProjectNature this] (:project @(.state this)))
 
 (defn -setProject
-  [this proj] (dosync (alter (.state this) assoc :project proj)))      
+  [#^ccw.ClojureProjectNature this proj] (dosync (alter (.state this) assoc :project proj)))      

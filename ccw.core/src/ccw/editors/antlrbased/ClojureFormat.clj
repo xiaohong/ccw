@@ -56,7 +56,7 @@
                             (recur ps c))))))]
         (cond
           incm (let [nl (or (= c \newline) (= c \return))
-                     spc (Character/isWhitespace c)
+                     spc (Character/isWhitespace #^Character c)
                      cc (if nl
                           (indent)
                           (if spc
@@ -103,7 +103,7 @@
           (= c \newline) (recur
                            r col dstack out nil false false false
                            false true cmindent)
-          (Character/isWhitespace c) (recur
+          (Character/isWhitespace #^Character c) (recur
                                        r col dstack out [\space]
                                        false false false false sups
                                        cmindent)

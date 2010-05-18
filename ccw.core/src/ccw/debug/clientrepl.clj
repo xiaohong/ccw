@@ -19,12 +19,12 @@
  
 (def *default-repl-port* 8503)
 
-(defn remote-load [s]
+(defn remote-load [#^String s]
   ;(println "remote-load: begin")
-  (with-open [client (new Socket "localhost" *default-repl-port*)]
+  (with-open [client (Socket. "localhost" (int *default-repl-port*))]
     ;(println "remote-load: opened socket on port " *default-repl-port*)
-    (with-open [dis (new java.io.DataInputStream 
-                         (new java.io.BufferedInputStream (.getInputStream client)))]
+    (with-open [dis (java.io.DataInputStream. 
+                         (java.io.BufferedInputStream. (.getInputStream client)))]
       ;(println "remote-load: opened input and output stream to socket")
       (with-open [dos (new java.io.DataOutputStream (.getOutputStream client))]
         ;(println "remote-load: opened data outputstream to socket")
@@ -41,9 +41,9 @@
             ;(println "remote-load: answer read: answer content:" (new String response-bytes "UTF-8"))
             ;(println "remote-load: end")
             { "response-type" response-type
-              "response" (new String response-bytes "UTF-8")}))))))
+              "response" (String. #^bytes response-bytes "UTF-8")}))))))
 
-(defn remote-load-read [s]
+(defn remote-load-read [#^String s]
   ;(println "remote-load-read: begin")
   (let [result (remote-load s)]
     ;(println "result: " result)
@@ -60,7 +60,7 @@
 (defn ns-info []
   (remote-load "(ns-info)"))
 
-(defn ns-sym [s]
+(defn ns-sym [#^String s]
   "returns a vector with the namespace in first position and the symbol in second position.
    if there is no namespace, first position will contain \"\"."
   (let [[s n] (-> s (.split "/") reverse)] [(or n "") s]))
