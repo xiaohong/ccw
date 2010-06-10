@@ -277,8 +277,10 @@ public final class ClojureCore {
 			case IClasspathEntry.CPE_LIBRARY:
 				if (onlyExportedEntries && !cpe.isExported())
 					continue;
+				cpe = JavaCore.getResolvedClasspathEntry(cpe); // resolve if there are vars
 				IPath sourcePath = cpe.getSourceAttachmentPath();
 				if (sourcePath != null) {
+					sourcePath = toOSAbsoluteIPath(sourcePath);
 					File sourceFile = sourcePath.toFile();
 					if (sourceFile.isDirectory()) {
 						// find whether it's in there or not
@@ -362,7 +364,23 @@ public final class ClojureCore {
 		return false;
 	}
     
-    public static String getNsPackageName(String ns) {
+    public static IPath toOSAbsoluteIPath(IPath path) {
+		if (ClojureCore.isWorkspaceRelativeIPath(path)) {
+			boolean isFolder = path.getFileExtension() == null;
+			if (isFolder) {
+				path = ResourcesPlugin.getWorkspace().getRoot().getFolder(path).getLocation();
+			} else {
+				path = ResourcesPlugin.getWorkspace().getRoot().getFile(path).getLocation();
+			}
+		}
+		return path;
+    }
+    
+    public static boolean isWorkspaceRelativeIPath(IPath path) {
+    	return ResourcesPlugin.getWorkspace().getRoot().exists(path);
+	}
+
+	public static String getNsPackageName(String ns) {
     	return (ns.lastIndexOf(".") < 0) ? "" : ns.substring(0, ns.lastIndexOf(".")).replace('-', '_');
     }
     
