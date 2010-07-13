@@ -137,11 +137,26 @@
   [prefix]
   (filter #(splitted-match prefix (str %) ["\\."]) (all-ns)))
 
-(defn code-complete [ns-str prefix only-publics]
-  (when-let [nss (matching-ns ns-str)]
+(def man nil)
+(defn- matching-aliased-ns
+  "seq of aliased namespaces which match the prefix
+  clojure.co matches clojure.core, ...
+  c.c also matches clojure.core, ..."
+  [cur-ns-str prefix]
+  (let [al-map (ns-aliases (the-ns (symbol cur-ns-str)))]
+    (map
+      (fn [[al-name al-ns]] al-ns)
+      (filter 
+        (fn [[al-name al-ns]] (splitted-match prefix (str al-name) ["\\."]))
+        al-map))))
+
+(defn code-complete [cur-ns-str ns-str prefix only-publics]
+  (when-let [nss (clojure.set/union
+                   (set (matching-ns ns-str))
+                   (when (seq ns-str)
+                     (set (matching-aliased-ns cur-ns-str prefix))))]
     (let [search-fn (if only-publics ns-publics ns-map)
-          ns-symbols (fn [ns] (search-fn ns))
-          symbols (mapcat ns-symbols nss)]
+          symbols (mapcat search-fn nss)]
       (into [] (map (fn [[k v]] [k (str v) (if (var? v) (var-info v) nil)])
                  (filter #(or (.startsWith (first %) prefix)
                             (splitted-match prefix (first %) ["-"]))

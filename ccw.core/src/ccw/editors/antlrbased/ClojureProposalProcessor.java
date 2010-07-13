@@ -71,6 +71,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 		public final boolean fullyQualified;
 		public final String nsPart;
 		public final String symbolPrefix;
+		public final String currentNamespace;
 		public PrefixInfo(final AntlrBasedClojureEditor editor, final String prefix, final int prefixOffset) {
 			this.prefix = prefix;
 			this.prefixOffset = prefixOffset;
@@ -84,6 +85,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 			    symbolPrefix = prefix;
 			    fullyQualified = false;
 			}
+			currentNamespace = editor.getDeclaringNamespace();
 		}
 	}
 
@@ -186,7 +188,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 	private List<ICompletionProposal> computeClojureFullyQualifiedSymbolsProposals(PrefixInfo prefixInfo) {
 		final List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
 
-		final List<List> dynamicSymbols = dynamicComplete(prefixInfo.nsPart, 
+		final List<List> dynamicSymbols = dynamicComplete(prefixInfo.currentNamespace, prefixInfo.nsPart, 
 				prefixInfo.symbolPrefix, editor, prefixInfo.fullyQualified); //parse(doc.get());
 		// Add dynamic completion proposals
 		for (List l: dynamicSymbols) {
@@ -217,7 +219,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 	private List<ICompletionProposal> computeClojureSymbolsProposals(PrefixInfo prefixInfo) {
 		final List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
 
-		final List<List> dynamicSymbols = dynamicComplete(prefixInfo.nsPart, 
+		final List<List> dynamicSymbols = dynamicComplete(prefixInfo.currentNamespace, prefixInfo.nsPart, 
 				prefixInfo.symbolPrefix, editor, prefixInfo.fullyQualified); //parse(doc.get());
 		// Add dynamic completion proposals
 		for (List l: dynamicSymbols) {
@@ -314,6 +316,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 						}
 						proposals.add(new MethodLazyCompletionProposal(
 								(IMethod) match.getElement(),
+								null,
 								methodPrefix,
 								prefixInfo.prefixOffset + 1, null,
 								editor));
@@ -357,6 +360,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 			public AbstractLazyCompletionProposal lazyCompletionProposal(PrefixInfo prefixInfo, AntlrBasedClojureEditor editor, SearchMatch match) {
 				return new MethodLazyCompletionProposal(
 						(IMethod) match.getElement(),
+						null,
 						prefixInfo.nsPart + "/" + prefixInfo.symbolPrefix,
 						prefixInfo.prefixOffset, editor.getDeclaringNamespace(),
 						editor);
@@ -372,6 +376,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 			public AbstractLazyCompletionProposal lazyCompletionProposal(PrefixInfo prefixInfo, AntlrBasedClojureEditor editor, SearchMatch match) {
 				return new ClassLazyCompletionProposal(
 						(IType) match.getElement(),
+						null,
 						prefixInfo.prefix,
 						prefixInfo.prefixOffset, editor.getDeclaringNamespace(),
 						editor);
@@ -387,6 +392,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 			public AbstractLazyCompletionProposal lazyCompletionProposal(PrefixInfo prefixInfo, AntlrBasedClojureEditor editor, SearchMatch match) {
 				return new PackageLazyCompletionProposal(
 						(IPackageFragment) match.getElement(),
+						null,
 						prefixInfo.prefix,
 						prefixInfo.prefixOffset, editor.getDeclaringNamespace(),
 						editor);
@@ -475,6 +481,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 		private final String prefix;
 		private final int prefixOffset;
 		private final String ns;
+		private final String currentNamespace;
 		private final AntlrBasedClojureEditor editor;
 		private String displayString; 
 		private CompletionProposal completionProposal;
@@ -505,7 +512,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 					} else {
 						List<List> dynamicSymbols = 
 							(ns!= null) 
-								? dynamicComplete(ns, methodTypeName, editor, false)
+								? dynamicComplete(currentNamespace, ns, methodTypeName, editor, false)
 								: null;
 
 						if (dynamicSymbols != null) {
@@ -550,7 +557,8 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 			return completionProposal;
 		}
 		
-		public AbstractLazyCompletionProposal(IMethod method, String methodPrefix, int methodPrefixOffset, String ns, AntlrBasedClojureEditor editor) {
+		public AbstractLazyCompletionProposal(IMethod method, String currentNamespace, String methodPrefix, int methodPrefixOffset, String ns, AntlrBasedClojureEditor editor) {
+			this.currentNamespace = currentNamespace;
 			this.method = method;
 			this.prefix = methodPrefix;
 			this.prefixOffset = methodPrefixOffset;
@@ -590,8 +598,8 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 	}
 	
 	private static class MethodLazyCompletionProposal extends AbstractLazyCompletionProposal {
-		public MethodLazyCompletionProposal(IMethod method, String methodPrefix, int methodPrefixOffset, String ns, AntlrBasedClojureEditor editor) {
-			super(method, methodPrefix, methodPrefixOffset, ns, editor);
+		public MethodLazyCompletionProposal(IMethod method, String currentNamespace, String methodPrefix, int methodPrefixOffset, String ns, AntlrBasedClojureEditor editor) {
+			super(method, currentNamespace, methodPrefix, methodPrefixOffset, ns, editor);
 		}
 		public Image getImage() {
 			return CCWPlugin.getDefault().getImageRegistry().get(CCWPlugin.PUBLIC_FUNCTION);
@@ -645,8 +653,8 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 			return completionProposal;
 		}
 		
-		public ClassLazyCompletionProposal(IType method, String methodPrefix, int methodPrefixOffset, String ns, AntlrBasedClojureEditor editor) {
-			super(null, methodPrefix, methodPrefixOffset, ns, editor); // TODO vraiment nulle comme technique !
+		public ClassLazyCompletionProposal(IType method, String currentNamespace, String methodPrefix, int methodPrefixOffset, String ns, AntlrBasedClojureEditor editor) {
+			super(null, currentNamespace, methodPrefix, methodPrefixOffset, ns, editor); // TODO vraiment nulle comme technique !
 			this.method = method;
 			this.prefix = methodPrefix;
 			this.prefixOffset = methodPrefixOffset;
@@ -694,8 +702,8 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 			return completionProposal;
 		}
 		
-		public PackageLazyCompletionProposal(IPackageFragment method, String methodPrefix, int methodPrefixOffset, String ns, AntlrBasedClojureEditor editor) {
-			super(null, methodPrefix, methodPrefixOffset, ns, editor); // TODO vraiment nulle comme technique !
+		public PackageLazyCompletionProposal(IPackageFragment method, String currentNamespace, String methodPrefix, int methodPrefixOffset, String ns, AntlrBasedClojureEditor editor) {
+			super(null, currentNamespace, methodPrefix, methodPrefixOffset, ns, editor); // TODO vraiment nulle comme technique !
 			this.method = method;
 			this.prefix = methodPrefix;
 			this.prefixOffset = methodPrefixOffset;
@@ -721,7 +729,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 		}
 		return false;
 	}
-	private static List<List> dynamicComplete(String namespace, String prefix, AntlrBasedClojureEditor editor, boolean findOnlyPublic) {
+	private static List<List> dynamicComplete(String currentNamespace, String namespace, String prefix, AntlrBasedClojureEditor editor, boolean findOnlyPublic) {
 		if (namespace == null) {
 			return Collections.emptyList();
 		}
@@ -734,7 +742,7 @@ public class ClojureProposalProcessor implements IContentAssistProcessor {
 			return Collections.emptyList();
 		}
 		
-		Map result = (Map) clojureClient.remoteLoadRead("(ccw.debug.serverrepl/code-complete \"" + namespace + "\" \"" + prefix + "\" " + (findOnlyPublic ? "true" : "false") + ")");
+		Map result = (Map) clojureClient.remoteLoadRead("(ccw.debug.serverrepl/code-complete \"" + currentNamespace + "\" \"" + namespace + "\" \"" + prefix + "\" " + (findOnlyPublic ? "true" : "false") + ")");
 		if (result == null) {
 			return Collections.emptyList();
 		}
