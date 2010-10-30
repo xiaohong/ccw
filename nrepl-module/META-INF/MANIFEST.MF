@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: nrepl module
+Bundle-SymbolicName: nrepl-module;singleton:=true
+Bundle-Version: 0.0.1.BETA01
+Bundle-Vendor: cemerick
+Import-Package: clojure,
+ clojure.asm,
+ clojure.asm.commons,
+ clojure.core,
+ clojure.core.protocols,
+ clojure.java,
+ clojure.java.io,
+ clojure.lang,
+ clojure.osgi,
+ clojure.pprint,
+ clojure.test,
+ org.osgi.framework
+Bundle-ClassPath: .,
+ nrepl-0.0.1.jar
+Export-Package: cemerick;version="0.0.1",
+ cemerick.nrepl;version="0.0.1",
+ cemerick.nrepl.tooling;version="0.0.1"
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-Activator: nrepl.module.NREPLModuleActivator

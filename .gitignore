@@ -1,1 +1,3 @@
 ccw.support.leiningen/classes/
+nrepl-module/bin/
+nrepl-module/classes/
