@@ -2,9 +2,10 @@ sample/lib
 sample/classes/
 sample/nomnomnom.jar
 lib/
-bin
+bin/*
 leiningen.jar
 leiningen-standalone.jar
 pom.xml
 lein-swank/lein-swank.jar
 autodoc/
+target/*
