@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: nrepl module
-Bundle-SymbolicName: nrepl-module;singleton:=true
-Bundle-Version: 0.0.1.BETA01
+Bundle-SymbolicName: ccw.org.clojure.tools.nrepl;singleton:=true
+Bundle-Version: 0.0.2.BETA01
 Bundle-Vendor: cemerick
 Import-Package: clojure,
  clojure.asm,
@@ -17,9 +17,8 @@ Import-Package: clojure,
  clojure.test,
  org.osgi.framework
 Bundle-ClassPath: .,
- nrepl-0.0.1.jar
-Export-Package: cemerick;version="0.0.1",
- cemerick.nrepl;version="0.0.1",
- cemerick.nrepl.tooling;version="0.0.1"
+ tools.nrepl-0.0.2.jar
+Export-Package: clojure.tools,
+ clojure.tools.nrepl
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Activator: nrepl.module.NREPLModuleActivator

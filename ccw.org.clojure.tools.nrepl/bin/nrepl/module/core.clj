@@ -1,5 +1,5 @@
 (ns nrepl.module.core
-  (:require [cemerick.nrepl :as repl]))
+  (:require [clojure.tools.nrepl :as repl]))
 (println "before start-server compilation")
 (defn start-server
   ([] (start-server 0))
