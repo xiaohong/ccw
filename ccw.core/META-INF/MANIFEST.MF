@@ -4,7 +4,7 @@ Bundle-Name: Counterclockwise Clojure Plug-in
 Bundle-SymbolicName: ccw.core;singleton:=true
 Bundle-Version: 0.0.64.STABLE01
 Bundle-Localization: plugin
-Bundle-Activator: ccw.CCWPlugin
+Bundle-Activator: ccw.FakeActivator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.ide,
@@ -27,7 +27,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench.texteditor,
  ccw.clojure;bundle-version="1.2.0",
  ccw.clojurecontrib;bundle-version="1.2.0",
- clojure.osgi;bundle-version="1.2.10",
+ clojure.osgi;bundle-version="1.2.12",
  org.clojure.tools.nrepl;bundle-version="0.0.3"
 Bundle-ClassPath: .,
  classes/
@@ -48,3 +48,8 @@ Export-Package: ccw,
  ccw.utils.editors.antlrbased,
  ccw.wizards
 Bundle-ActivationPolicy: lazy
+Clojure-Require: ccw.activator,
+ clojure.tools.nrepl,
+ clojure.tools.nrepl.helpers,
+ ccw.repl.view-helpers
+Clojure-ActivatorNamespace: ccw.activator

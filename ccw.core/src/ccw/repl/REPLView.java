@@ -20,12 +20,9 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IWorkbenchPage;
@@ -40,21 +37,17 @@ import org.eclipse.ui.part.ViewPart;
 import ccw.CCWPlugin;
 import ccw.editors.antlrbased.ClojureSourceViewer;
 import ccw.editors.antlrbased.ClojureSourceViewerConfiguration;
-import ccw.editors.antlrbased.EvaluateTextUtil;
 import ccw.editors.antlrbased.IClojureEditorActionDefinitionIds;
 import ccw.editors.antlrbased.OpenDeclarationAction;
 import ccw.editors.rulesbased.ClojureDocumentProvider;
-import ccw.launching.LaunchUtils;
 import ccw.outline.NamespaceBrowser;
-import clojure.tools.nrepl.Connection;
 import clojure.lang.Atom;
 import clojure.lang.IFn;
 import clojure.lang.Keyword;
 import clojure.lang.PersistentTreeMap;
-import clojure.lang.PersistentVector;
 import clojure.lang.Symbol;
 import clojure.lang.Var;
-import clojure.osgi.ClojureOSGi;
+import clojure.tools.nrepl.Connection;
 
 public class REPLView extends ViewPart {
     public static final String VIEW_ID = "ccw.view.repl";
@@ -64,7 +57,6 @@ public class REPLView extends ViewPart {
     private static Var configureREPLView;
     static {
         try {
-            ClojureOSGi.require(CCWPlugin.getDefault().getBundle().getBundleContext(), "ccw.repl.view-helpers");
             log = Var.find(Symbol.intern("ccw.repl.view-helpers/log"));
             configureREPLView = Var.find(Symbol.intern("ccw.repl.view-helpers/configure-repl-view"));
         } catch (Exception e) {

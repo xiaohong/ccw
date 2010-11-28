@@ -44,7 +44,6 @@ import ccw.preferences.SyntaxColoringPreferencePage;
 import ccw.repl.REPLView;
 import ccw.util.DisplayUtil;
 import ccw.utils.editors.antlrbased.IScanContext;
-import clojure.osgi.ClojureOSGi;
 import clojure.tools.nrepl.Connection;
 
 /**
@@ -89,15 +88,13 @@ public class CCWPlugin extends AbstractUIPlugin {
     }
     
     public void start(BundleContext context) throws Exception {
+    	System.out.println("CCWPlugin.start() called");
         super.start(context);
-        
         plugin = this;
-        startClojureCode(context);
         initializeParenRainbowColors();
-        createColorRegistry();
     }
     
-    private void createColorRegistry() {
+    private synchronized void createColorRegistry() {
     	if (colorRegistry == null) {
     		DisplayUtil.syncExec(new Runnable() {
 				public void run() {
@@ -108,6 +105,9 @@ public class CCWPlugin extends AbstractUIPlugin {
     }
     
     public ColorRegistry getColorRegistry() {
+    	if (colorRegistry == null) {
+    		createColorRegistry();
+    	}
     	return colorRegistry;
     }
     
@@ -155,27 +155,6 @@ public class CCWPlugin extends AbstractUIPlugin {
         return prefs;
     }
 
-    private void startClojureCode(BundleContext bundleContext) throws Exception {
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.ClojureProjectNature");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.PareditAutoEditStrategy");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.ClojureFormat");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.StacktraceHyperlink");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.ExpandSelectionUpAction");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.ExpandSelectionLeftAction");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.ExpandSelectionRightAction");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.RaiseSelectionAction");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.IndentSelectionAction");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.SplitSexprAction");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.JoinSexprAction");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.SwitchStructuralEditionModeAction");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.OpenDeclarationAction");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.EditorSupport");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.ClojureHyperlinkDetector");
-    	ClojureOSGi.loadAOTClass(bundleContext, "ccw.editors.antlrbased.ClojureHyperlink");
-
-    	ClojureOSGi.require(bundleContext, "ccw.debug.clientrepl");
-    }
-    
     public void stop(BundleContext context) throws Exception {
     	disposeParenRainbowColors();
     	// We don't remove colors when deregistered, because, well, we don't have a
@@ -212,6 +191,17 @@ public class CCWPlugin extends AbstractUIPlugin {
      * @return the shared instance
      */
     public static CCWPlugin getDefault() {
+    	if (plugin == null) {
+    		try {
+    			System.out.println("plugin not yet initialized, waiting 10 seconds");
+				Thread.sleep(20000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+    	}
+    	if (plugin == null) {
+    		System.out.println("plugin still not initialized, ouch ...");
+    	}
         return plugin;
     }
 
