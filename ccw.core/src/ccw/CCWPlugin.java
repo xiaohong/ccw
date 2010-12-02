@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
+import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -69,7 +70,11 @@ public class CCWPlugin extends AbstractUIPlugin {
 	 *         dispose the color themselves)
 	 */
 	public static Color getCCWColor(int index) {
-		return CCWPlugin.getDefault().allColors[index];
+		CCWPlugin plugin = CCWPlugin.getDefault(); 
+		if(plugin.allColors == null)
+			plugin.initializeParenRainbowColors();
+		
+		return plugin.allColors[index];
 	}
 	
     /** The shared instance */
@@ -78,7 +83,7 @@ public class CCWPlugin extends AbstractUIPlugin {
     /** "Read-only" table, do not alter */
     // TODO presumably, the color registry is where *all* colors should go, but that API is
     // clear as mud to me at the moment
-    public Color[] allColors;
+    private Color[] allColors;
     
     private ColorRegistry colorRegistry;
     
@@ -91,7 +96,6 @@ public class CCWPlugin extends AbstractUIPlugin {
     	System.out.println("CCWPlugin.start() called");
         super.start(context);
         plugin = this;
-        initializeParenRainbowColors();
     }
     
     private synchronized void createColorRegistry() {
