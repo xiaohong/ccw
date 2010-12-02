@@ -49,7 +49,5 @@ Export-Package: ccw,
  ccw.wizards
 Bundle-ActivationPolicy: lazy
 Clojure-Require: ccw.activator,
- clojure.tools.nrepl,
- clojure.tools.nrepl.helpers,
  ccw.repl.view-helpers
 Clojure-ActivatorNamespace: ccw.activator
